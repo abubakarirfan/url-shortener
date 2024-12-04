@@ -1,5 +1,5 @@
 """
-WSGI config for url_shortner project.
+WSGI config for url_shortener project.
 
 It exposes the WSGI callable as a module-level variable named ``application``.
 
