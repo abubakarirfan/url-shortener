@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>URL Shortener</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        .button {
+            display: inline-block;
+            background-color: #28a745;
+            color: #fff;
+            padding: 10px 15px;
+            text-align: center;
+            border-radius: 4px;
+            text-decoration: none;
+            border: none;
+            cursor: pointer;
+        }
+
+        .short-url {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #e9ecef;
+            border-left: 5px solid #28a745;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>URL Shortener</h1>
+        <form id="shortener-form" method="POST">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="long-url">Enter URL to Shorten:</label>
+                <input type="url" id="long-url" name="long_url" placeholder="https://example.com" required>
+            </div>
+            <button type="submit" class="button">Shorten URL</button>
+        </form>
+        <div id="short-url-display" class="short-url" style="margin-top: 20px;">
+            {% if short_url %}
+            <strong>Shortened URL:</strong>
+            <a href="{{ short_url }}" target="_blank">{{ short_url }}</a>
+            {% if click_count is not None %}
+            <p>This link has been accessed {{ click_count }} times.</p>
+            {% endif %}
+            {% endif %}
+        </div>
+
+    </div>
+    <script>
+        document.getElementById('shortener-form').addEventListener('submit', async (e) => {
+            e.preventDefault();  // Prevent default form submission
+
+            const csrfToken = document.querySelector('input[name="csrfmiddlewaretoken"]').value;
+            const longUrl = document.getElementById('long-url').value;
+
+            try {
+                const response = await fetch('/shorten/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'X-CSRFToken': csrfToken,  // Include CSRF token
+                    },
+                    body: `long_url=${encodeURIComponent(longUrl)}`,
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();  // Parse JSON response
+
+                // Update the 'short-url' div
+                const shortUrlDiv = document.getElementById('short-url-display');
+                shortUrlDiv.innerHTML = `
+                <strong>Shortened URL:</strong>
+                <a href="${data.short_url}" target="_blank">${data.short_url}</a>
+            `;
+            } catch (error) {
+                console.error('Error:', error);
+                alert('An error occurred. Check the console for details.');
+            }
+        });
+
+    </script>
+</body>
+
+</html>
