@@ -34,6 +34,32 @@ def shorten_url(request):
     return JsonResponse({"error": "Invalid request method"}, status=405)
 
 
+def search_url(request):
+    code = request.GET.get('code', '').strip()
+    if code:
+        try:
+            # Retrieve the URL object based on the short code
+            searched_url = URL.objects.get(short_url=code)
+            # Build the full short URL
+            base_url = request.build_absolute_uri(
+                '/')  # e.g., 'http://127.0.0.1:8000/'
+            full_short_url = base_url + searched_url.short_url
+            return render(request, 'shortener/index.html', {
+                'searched_url': searched_url,
+                'full_short_url': full_short_url,
+            })
+        except URL.DoesNotExist:
+            # If no URL is found with the provided code
+            return render(request, 'shortener/index.html', {
+                'search_error': 'No URL found with the provided code.'
+            })
+    else:
+        # If no code was entered
+        return render(request, 'shortener/index.html', {
+            'search_error': 'Please enter a code to search.'
+        })
+
+
 def index(request):
     if request.method == 'POST':
         long_url = request.POST.get('long_url')

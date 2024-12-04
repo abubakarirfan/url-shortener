@@ -62,6 +62,7 @@
 <body>
     <div class="container">
         <h1>URL Shortener</h1>
+        <!-- URL Shortening Form -->
         <form id="shortener-form" method="POST">
             {% csrf_token %}
             <div class="form-group">
@@ -70,16 +71,36 @@
             </div>
             <button type="submit" class="button">Shorten URL</button>
         </form>
+    
+        <!-- Short URL Display -->
         <div id="short-url-display" class="short-url" style="margin-top: 20px;">
             {% if short_url %}
             <strong>Shortened URL:</strong>
             <a href="{{ short_url }}" target="_blank">{{ short_url }}</a>
-            {% if click_count is not None %}
-            <p>This link has been accessed {{ click_count }} times.</p>
-            {% endif %}
             {% endif %}
         </div>
-
+    
+        <!-- **New Search Form** -->
+        <h2>Search for a URL by Code</h2>
+        <form id="search-form" method="GET" action="{% url 'search_url' %}">
+            <div class="form-group">
+                <label for="search-code">Enter Code:</label>
+                <input type="text" id="search-code" name="code" placeholder="Enter code to search" required>
+            </div>
+            <button type="submit" class="button">Search</button>
+        </form>
+    
+        <!-- Search Result Display -->
+        <div id="search-result" class="search-result" style="margin-top: 20px;">
+            {% if searched_url %}
+            <strong>Original URL:</strong>
+            <a href="{{ searched_url.long_url }}" target="_blank">{{ searched_url.long_url }}</a>
+            <p>Short URL: <a href="{{ full_short_url }}" target="_blank">{{ full_short_url }}</a></p>
+            <p>Click Count: {{ searched_url.click_count }}</p>
+            {% elif search_error %}
+            <p style="color: red;">{{ search_error }}</p>
+            {% endif %}
+        </div>
     </div>
     <script>
         document.getElementById('shortener-form').addEventListener('submit', async (e) => {
